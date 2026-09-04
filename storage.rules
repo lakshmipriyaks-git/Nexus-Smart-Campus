@@ -1,0 +1,39 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isTeacher() {
+      return isAuthenticated() && 
+             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'teacher';
+    }
+    
+    function isEnrolledInCourse(courseId) {
+      return isAuthenticated() &&
+             exists(/databases/(default)/documents/joinRequests/$(request.auth.uid + '_' + courseId)) &&
+             firestore.get(/databases/(default)/documents/joinRequests/$(request.auth.uid + '_' + courseId)).data.status == 'approved';
+    }
+    
+    // Course resources path: /courses/{courseId}/resources/{resourceId}
+    match /courses/{courseId}/resources/{resourceId} {
+      // Teachers can upload resources to their courses
+      allow create, update: if isTeacher();
+      
+      // Teachers can delete resources from their courses
+      allow delete: if isTeacher();
+      
+      // Authenticated users can read resources from courses they're enrolled in
+      // Teachers can read all resources
+      allow read: if isTeacher() || isEnrolledInCourse(courseId);
+    }
+    
+    // Deny all other access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
