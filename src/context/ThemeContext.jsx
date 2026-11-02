@@ -12,9 +12,14 @@ export const useTheme = () => {
 
 export const ThemeProvider = ({ children }) => {
     const [darkMode, setDarkMode] = useState(() => {
-        // Get from localStorage or default to false
-        const saved = localStorage.getItem('darkMode');
-        return saved === 'true';
+        // Default new users to Light Mode only if no saved preference exists
+        if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+            const saved = localStorage.getItem('darkMode');
+            if (saved !== null) {
+                return saved === 'true';
+            }
+        }
+        return false;
     });
 
     useEffect(() => {
@@ -24,11 +29,12 @@ export const ThemeProvider = ({ children }) => {
         } else {
             html.classList.remove('dark');
         }
-        localStorage.setItem('darkMode', darkMode);
+        if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('darkMode', darkMode ? 'true' : 'false');
+        }
     }, [darkMode]);
 
     const toggleDarkMode = () => {
-        console.log('Toggling dark mode from', darkMode, 'to', !darkMode);
         setDarkMode(prev => !prev);
     };
 

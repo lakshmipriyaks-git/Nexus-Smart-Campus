@@ -1,0 +1,208 @@
+/* ── NEXUS Phase 6: Immersive Spatial Intelligence Design Tokens ── */
+
+:root {
+    /* Institutional Light Palette */
+    --ivory-base: #F4F2EC;
+    --ivory-subtle: #FAF9F5;
+    --ivory-elevated: #FFFFFF;
+    --stone-border: #E4E1D8;
+    --stone-divider: #DCD8CD;
+    --stone-subtle: #EAE6DC;
+    --ink-primary: #202832;
+    --ink-secondary: #475569;
+    --ink-muted: #687585;
+    --cobalt-primary: #2856C7;
+    --cobalt-hover: #1F429F;
+    --cobalt-active: #173277;
+    --cobalt-subtle: rgba(40, 86, 199, 0.08);
+    --cobalt-border: rgba(40, 86, 199, 0.25);
+    --terracotta-accent: #B96943;
+    --terracotta-hover: #A35B38;
+    --terracotta-subtle: rgba(185, 105, 67, 0.08);
+    --terracotta-border: rgba(185, 105, 67, 0.25);
+    --emerald-status: #059669;
+    --emerald-bg: #ecfdf5;
+    --amber-status: #d97706;
+    --amber-bg: #fffbeb;
+    --rose-status: #e11d48;
+    --rose-bg: #fff1f2;
+
+    /* Current Context Surfaces */
+    --bg-page: var(--ivory-base);
+    --bg-surface: var(--ivory-elevated);
+    --bg-drawer: var(--ivory-subtle);
+    --bg-overlay: rgba(32, 40, 50, 0.6);
+    --text-heading: var(--ink-primary);
+    --text-body: var(--ink-secondary);
+    --text-caption: var(--ink-muted);
+    --border-color: var(--stone-border);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 14px -2px rgba(0, 0, 0, 0.07);
+    --shadow-lg: 0 14px 28px -4px rgba(0, 0, 0, 0.1);
+    --shadow-drawer: -6px 0 24px rgba(0, 0, 0, 0.08);
+
+    /* 3D Atlas Canvas Theme */
+    --canvas-bg: #EAE6DC;
+    --canvas-ground: #E4E1D8;
+    --canvas-road: #CFCBC0;
+    --canvas-grass: #CCD7C7;
+    --canvas-bldg-wall: #F4F2EC;
+    --canvas-bldg-roof: #DCD7CA;
+    --canvas-bldg-trim: #2856C7;
+}
+
+body.dark-mode {
+    /* Institutional Graphite Dark Palette */
+    --bg-page: #171C23;
+    --bg-surface: #222A34;
+    --bg-drawer: #1A212B;
+    --bg-overlay: rgba(0, 0, 0, 0.75);
+    --text-heading: #F2F0EA;
+    --text-body: #CBD5E1;
+    --text-caption: #A9B1BD;
+    --border-color: #2E3846;
+    --stone-border: #2E3846;
+    --stone-subtle: #1D242D;
+    --cobalt-primary: #6F91EB;
+    --cobalt-hover: #8AB0FA;
+    --cobalt-subtle: rgba(111, 145, 235, 0.12);
+    --cobalt-border: rgba(111, 145, 235, 0.3);
+    --terracotta-accent: #D9875F;
+    --terracotta-hover: #E39975;
+    --terracotta-subtle: rgba(217, 135, 95, 0.12);
+    --terracotta-border: rgba(217, 135, 95, 0.3);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 14px -2px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 14px 28px -4px rgba(0, 0, 0, 0.5);
+    --shadow-drawer: -6px 0 24px rgba(0, 0, 0, 0.5);
+
+    /* 3D Atlas Canvas Theme Dark */
+    --canvas-bg: #12161C;
+    --canvas-ground: #171C23;
+    --canvas-road: #222A34;
+    --canvas-grass: #1C2723;
+    --canvas-bldg-wall: #222A34;
+    --canvas-bldg-roof: #2C3643;
+    --canvas-bldg-trim: #6F91EB;
+}
+
+/* Typography Standards */
+.font-display {
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+    letter-spacing: -0.02em;
+}
+
+.font-body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.font-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Base Primitives */
+.surface-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.surface-card:hover {
+    border-color: var(--cobalt-primary);
+    box-shadow: var(--shadow-md);
+}
+
+.surface-elevated {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+}
+
+.tag-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.02em;
+    border: 1px solid transparent;
+}
+
+.tag-badge-cobalt {
+    background: var(--cobalt-subtle);
+    color: var(--cobalt-primary);
+    border-color: var(--cobalt-border);
+}
+
+.tag-badge-terracotta {
+    background: var(--terracotta-subtle);
+    color: var(--terracotta-accent);
+    border-color: var(--terracotta-border);
+}
+
+.tag-badge-emerald {
+    background: var(--emerald-bg);
+    color: var(--emerald-status);
+    border-color: rgba(5, 150, 105, 0.3);
+}
+
+.tag-badge-amber {
+    background: var(--amber-bg);
+    color: var(--amber-status);
+    border-color: rgba(217, 119, 6, 0.3);
+}
+
+.btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 9px 18px;
+    background: var(--cobalt-primary);
+    color: #FFFFFF;
+    border: 1px solid var(--cobalt-primary);
+    border-radius: 8px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.15s ease;
+}
+
+.btn-primary:hover {
+    background: var(--cobalt-hover);
+    border-color: var(--cobalt-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 9px 18px;
+    background: var(--bg-surface);
+    color: var(--text-heading);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-secondary:hover {
+    background: var(--stone-subtle);
+    border-color: var(--text-caption);
+}
+

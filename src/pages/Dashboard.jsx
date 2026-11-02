@@ -28,7 +28,7 @@ export default function Dashboard() {
         return <StudentDashboard />;
     }
 
-    if (role === ROLES.TEACHER) {
+    if (role === ROLES.TEACHER || role === ROLES.STAFF) {
         return <TeacherDashboard />;
     }
 

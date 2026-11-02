@@ -1,0 +1,38 @@
+{
+  "screenshots": [
+    "bus_qa_light_demo_1440.png",
+    "bus_qa_route_f1_1440.png",
+    "bus_qa_light_live_1440.png",
+    "bus_qa_fullscreen_map_1440.png",
+    "bus_qa_dark_demo_1440.png",
+    "bus_qa_dark_live_1440.png",
+    "bus_qa_mobile_dark_390.png",
+    "bus_qa_mobile_light_390.png"
+  ],
+  "modeSwitching": {
+    "live": {
+      "hasLiveIndicator": true,
+      "hasNoFix": true,
+      "etaText": []
+    }
+  },
+  "routeSwitching": {
+    "foundRouteButtons": [],
+    "results": []
+  },
+  "fullScreenMap": {
+    "open": "Opened full map",
+    "close": "Dispatched ESC key"
+  },
+  "mobileAudit": {
+    "bodyWidth": 390,
+    "scrollWidth": 390,
+    "hasHorizontalScroll": false,
+    "mapRect": {
+      "width": 356,
+      "height": 460
+    }
+  },
+  "consoleErrors": [],
+  "networkFailures": []
+}

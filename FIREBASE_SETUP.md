@@ -41,14 +41,10 @@ Follow these steps to set up Firebase for your Student-Teacher Hub application.
 
 ## Step 5: Add Firebase Config to Your App
 
-1. Open your `.env` file (in the root of your project)
-2. Add the following lines using the values from your Firebase config:
+1. Copy `.env.example` to `.env` in the project root.
+2. Replace each Firebase value with the matching value from your Firebase web app config:
 
 ```env
-# Existing Gemini API Key (keep this)
-VITE_GEMINI_API_KEY=AIzaSyBg_zszd6TwTMVZrek2WuUkOknLVaiw4JA
-
-# Firebase Configuration (add these)
 VITE_FIREBASE_API_KEY=your_api_key_here
 VITE_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=your_project_id
@@ -57,15 +53,14 @@ VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
 ```
 
-3. Replace the placeholder values with your actual Firebase config values
-4. **Save the file**
+Do not leave the example values in place. The API key must come from the Firebase Console under **Project settings → General → Your apps**. If the key is restricted, ensure it allows the domains used by this app, including `localhost` during development.
 
 ## Step 6: Restart Development Server
 
 Since we updated the `.env` file, you need to restart the dev server:
 
-1. Press `Ctrl+C` in the terminal running `npm run dev`
-2. Run `npm run dev` again
+1. Stop the terminal running `npm run dev`.
+2. Run `npm run dev` again so Vite loads the new environment variables.
 
 ## Verification
 

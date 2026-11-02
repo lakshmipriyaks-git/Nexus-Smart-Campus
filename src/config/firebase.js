@@ -14,6 +14,11 @@ const firebaseConfig = {
     appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
+const isConfiguredValue = (value) =>
+    typeof value === 'string' && value.trim().length > 0 && !/(dummy|your_|placeholder)/i.test(value);
+
+export const isFirebaseConfigured = Object.values(firebaseConfig).every(isConfiguredValue);
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 

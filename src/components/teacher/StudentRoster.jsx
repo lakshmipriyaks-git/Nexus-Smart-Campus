@@ -63,6 +63,7 @@ export default function StudentRoster() {
             return {
                 id: req.studentId,
                 name: req.studentName,
+                usn: req.studentUsn || '1KS21CS001',
                 classId: req.classId,
                 className: myClasses.find(c => c.id === req.classId)?.name || 'Unknown',
                 attendance: attendancePercent,
@@ -91,6 +92,7 @@ export default function StudentRoster() {
         const query = searchQuery.toLowerCase();
         return (
             student.name.toLowerCase().includes(query) ||
+            (student.usn && student.usn.toLowerCase().includes(query)) ||
             student.className.toLowerCase().includes(query)
         );
     });
@@ -158,8 +160,13 @@ export default function StudentRoster() {
                             {pendingRequests.map(req => (
                                 <div key={req.id} className="flex items-center justify-between p-4 bg-white/60 dark:bg-gray-800/60 rounded-xl border border-yellow-100 dark:border-yellow-800 shadow-sm backdrop-blur-sm">
                                     <div>
-                                        <p className="font-medium text-gray-900 dark:text-gray-100">{req.studentName}</p>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <p className="font-semibold text-gray-900 dark:text-gray-100">{req.studentName}</p>
+                                            <span className="font-mono text-xs px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-bold">
+                                                USN: {req.studentUsn || '1KS21CS001'}
+                                            </span>
+                                        </div>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
                                             wants to join <span className="font-medium text-indigo-600 dark:text-indigo-400">{classes.find(c => c.id === req.classId)?.name}</span>
                                         </p>
                                     </div>
@@ -196,7 +203,7 @@ export default function StudentRoster() {
                     <SearchBar
                         value={searchQuery}
                         onChange={setSearchQuery}
-                        placeholder="Search by student name or class..."
+                        placeholder="Search by student name, USN, or class..."
                     />
 
                     <div className="overflow-x-auto">
@@ -204,6 +211,7 @@ export default function StudentRoster() {
                             <thead className="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-50 dark:bg-gray-800">
                                 <tr>
                                     <th className="px-4 py-3">Name</th>
+                                    <th className="px-4 py-3">USN</th>
                                     <th className="px-4 py-3">Class</th>
                                     <th className="px-4 py-3">Total Classes</th>
                                     <th className="px-4 py-3">Attendance</th>
@@ -214,13 +222,14 @@ export default function StudentRoster() {
                             <tbody>
                                 {filteredStudents.length === 0 ? (
                                     <tr>
-                                        <td colSpan="6" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                                        <td colSpan="7" className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
                                             No students found matching "{searchQuery}"
                                         </td>
                                     </tr>
                                 ) : filteredStudents.map(student => (
                                     <tr key={student.id} className="border-b border-gray-100 dark:border-gray-700 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700">
                                         <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{student.name}</td>
+                                        <td className="px-4 py-3 font-mono text-xs font-semibold text-indigo-600 dark:text-indigo-400">{student.usn}</td>
                                         <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{student.className}</td>
                                         <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{student.totalClasses}</td>
                                         <td className="px-4 py-3">

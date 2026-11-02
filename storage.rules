@@ -31,6 +31,15 @@ service firebase.storage {
       allow read: if isTeacher() || isEnrolledInCourse(courseId);
     }
     
+    // Complaint evidence attachments (anonymous opaque paths & identified paths)
+    match /attachments/complaints/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.size < 15 * 1024 * 1024;
+      allow update, delete: if isAuthenticated() && (
+        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role in ['hod', 'staff', 'teacher']
+      );
+    }
+    
     // Deny all other access
     match /{allPaths=**} {
       allow read, write: if false;

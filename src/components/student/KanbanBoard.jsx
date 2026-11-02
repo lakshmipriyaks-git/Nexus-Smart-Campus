@@ -51,14 +51,14 @@ export default function KanbanBoard() {
                 </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1 min-h-0 overflow-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1 min-h-0 overflow-y-auto md:overflow-hidden">
                 {columns.map((column, colIndex) => (
                     <motion.div
                         key={column.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: colIndex * 0.1 }}
-                        className="bg-gray-100/50 dark:bg-gray-800/50 rounded-xl p-4 flex flex-col gap-3 h-full overflow-hidden"
+                        className="bg-gray-100/50 dark:bg-gray-800/50 rounded-xl p-4 flex flex-col gap-3 min-h-[340px] md:h-full overflow-hidden"
                     >
                         <div className="flex items-center gap-2 mb-2 flex-none">
                             <column.icon className={`h-5 w-5 ${column.color}`} />

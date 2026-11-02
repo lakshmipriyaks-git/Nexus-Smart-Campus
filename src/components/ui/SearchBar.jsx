@@ -25,18 +25,18 @@ export default function SearchBar({ value, onChange, placeholder = "Search...", 
 
     return (
         <div className={`relative ${className}`}>
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
             <input
                 type="text"
                 value={localValue}
                 onChange={(e) => setLocalValue(e.target.value)}
                 placeholder={placeholder}
-                className="w-full pl-10 pr-10 py-2 bg-white/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent outline-none transition-all text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-400"
+                className="w-full pl-10 pr-10 py-2.5 bg-[#0A0F1D] border border-[#1E2D4A] rounded-xl focus:ring-2 focus:ring-[#06B6D4]/30 focus:border-[#06B6D4] outline-none transition-all text-xs sm:text-sm text-white placeholder:text-slate-500"
             />
             {localValue && (
                 <button
                     onClick={handleClear}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
                     aria-label="Clear search"
                 >
                     <X className="h-4 w-4" />

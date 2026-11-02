@@ -9,6 +9,7 @@ import { useAttendance } from '../hooks/useAttendance';
 import { useGrading } from '../hooks/useGrading';
 import { useUsers } from '../hooks/useUsers';
 import { useInterventions } from '../hooks/useInterventions';
+import { useNotifications } from '../hooks/useNotifications';
 
 const DataContext = createContext(null);
 
@@ -25,6 +26,7 @@ export const DataProvider = ({ children }) => {
     const usersData = useUsers();
     const platformStatsData = usersData.usePlatformStats(user);
     const interventionsData = useInterventions(user);
+    const notificationsData = useNotifications(user);
 
     const value = {
         ...tasksData,
@@ -38,6 +40,7 @@ export const DataProvider = ({ children }) => {
         platformStats: platformStatsData.stats,
         platformStatsLoading: platformStatsData.loading,
         ...interventionsData,
+        ...notificationsData,
     };
 
     return (

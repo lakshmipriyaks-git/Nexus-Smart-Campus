@@ -51,7 +51,12 @@ export default function TeacherApprovalQueue({ pendingTeachers, hodLoading, appr
                                             {teacher.name?.[0]?.toUpperCase() || 'T'}
                                         </div>
                                         <div className="min-w-0">
-                                            <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">{teacher.name}</p>
+                                            <div className="flex items-center gap-2">
+                                                <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">{teacher.name}</p>
+                                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-200/80 text-amber-900 dark:bg-amber-900/60 dark:text-amber-200">
+                                                    {teacher.departmentId || 'CSE'}
+                                                </span>
+                                            </div>
                                             <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 truncate">
                                                 <Mail className="h-3 w-3 flex-shrink-0" />
                                                 {teacher.email}

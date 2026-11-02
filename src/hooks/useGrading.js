@@ -1,53 +1,80 @@
 import { useState, useEffect } from 'react';
 import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, getDocs, doc, serverTimestamp, query, where } from 'firebase/firestore';
 import { db } from '../config/firebase';
+import { mockStore } from '../mock/mockStore';
 import toast from 'react-hot-toast';
 
 export const useGrading = (user) => {
     const [assessments, setAssessments] = useState([]);
     const [grades, setGrades] = useState([]);
 
-    // Load assessments
+    // Load assessments & grades
     useEffect(() => {
         if (!user?.id || !user?.role) {
             setAssessments([]);
-            return;
-        }
-
-        const assessmentsRef = collection(db, 'assessments');
-        const unsubscribe = onSnapshot(assessmentsRef, (snapshot) => {
-            const assessmentsData = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setAssessments(assessmentsData);
-        });
-
-        return unsubscribe;
-    }, [user]);
-
-    // Load grades
-    useEffect(() => {
-        if (!user?.id || !user?.role) {
             setGrades([]);
             return;
         }
 
+        if (user.isDemo) {
+            const unsubAssessments = mockStore.subscribe('assessments', (data) => {
+                setAssessments(data || []);
+            });
+            const unsubGrades = mockStore.subscribe('grades', (data) => {
+                const list = data || [];
+                if (user.role === 'student') {
+                    setGrades(list.filter(g => g.studentId === user.id));
+                } else {
+                    setGrades(list);
+                }
+            });
+
+            return () => {
+                unsubAssessments();
+                unsubGrades();
+            };
+        }
+
+        const assessmentsRef = collection(db, 'assessments');
+        let unsub1;
+        try {
+            unsub1 = onSnapshot(assessmentsRef, (snapshot) => {
+                const assessmentsData = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                setAssessments(assessmentsData);
+            }, () => setAssessments(mockStore.get('assessments')));
+        } catch (e) {
+            setAssessments(mockStore.get('assessments'));
+        }
+
         const gradesRef = collection(db, 'grades');
-        // Students can only read their own grades; scope the query accordingly
         const q = user.role === 'student'
             ? query(gradesRef, where('studentId', '==', user.id))
             : gradesRef;
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const gradesData = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setGrades(gradesData);
-        });
+        let unsub2;
+        try {
+            unsub2 = onSnapshot(q, (snapshot) => {
+                const gradesData = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                setGrades(gradesData);
+            }, () => {
+                const list = mockStore.get('grades');
+                setGrades(user.role === 'student' ? list.filter(g => g.studentId === user.id) : list);
+            });
+        } catch (e) {
+            const list = mockStore.get('grades');
+            setGrades(user.role === 'student' ? list.filter(g => g.studentId === user.id) : list);
+        }
 
-        return unsubscribe;
-    }, [user?.id, user?.role]);
+        return () => {
+            if (unsub1) unsub1();
+            if (unsub2) unsub2();
+        };
+    }, [user?.id, user?.role, user?.isDemo]);
 
     const calculateGradeLetter = (percentage) => {
         if (percentage >= 90) return 'A+';
@@ -59,6 +86,12 @@ export const useGrading = (user) => {
     };
 
     const createAssessment = async (assessmentData) => {
+        if (user?.isDemo) {
+            const newAssessment = mockStore.add('assessments', assessmentData);
+            toast.success('Assessment created');
+            return newAssessment;
+        }
+
         try {
             const docRef = await addDoc(collection(db, 'assessments'), {
                 ...assessmentData,
@@ -74,6 +107,12 @@ export const useGrading = (user) => {
     };
 
     const updateAssessment = async (assessmentId, updates) => {
+        if (user?.isDemo) {
+            mockStore.update('assessments', assessmentId, updates);
+            toast.success('Assessment updated');
+            return;
+        }
+
         try {
             await updateDoc(doc(db, 'assessments', assessmentId), {
                 ...updates,
@@ -87,11 +126,16 @@ export const useGrading = (user) => {
     };
 
     const deleteAssessment = async (assessmentId) => {
-        try {
-            // Delete assessment
-            await deleteDoc(doc(db, 'assessments', assessmentId));
+        if (user?.isDemo) {
+            mockStore.remove('assessments', assessmentId);
+            const allGrades = mockStore.get('grades');
+            allGrades.filter(g => g.assessmentId === assessmentId).forEach(g => mockStore.remove('grades', g.id));
+            toast.success('Assessment deleted');
+            return;
+        }
 
-            // Delete all grades for this assessment
+        try {
+            await deleteDoc(doc(db, 'assessments', assessmentId));
             const gradesRef = collection(db, 'grades');
             const q = query(gradesRef, where('assessmentId', '==', assessmentId));
             const querySnapshot = await getDocs(q);
@@ -106,10 +150,22 @@ export const useGrading = (user) => {
     };
 
     const enterGrade = async (assessmentId, courseId, studentId, marksScored, maxMarks) => {
-        try {
-            const percentage = Math.round((marksScored / maxMarks) * 100);
-            const grade = calculateGradeLetter(percentage);
+        const percentage = Math.round((marksScored / maxMarks) * 100);
+        const grade = calculateGradeLetter(percentage);
 
+        if (user?.isDemo) {
+            const existing = mockStore.get('grades').find(g => g.assessmentId === assessmentId && g.studentId === studentId);
+            if (existing) {
+                mockStore.update('grades', existing.id, { marksScored, maxMarks, percentage, grade });
+                toast.success('Grade updated');
+            } else {
+                mockStore.add('grades', { assessmentId, courseId, studentId, marksScored, maxMarks, percentage, grade });
+                toast.success('Grade entered');
+            }
+            return;
+        }
+
+        try {
             const gradesRef = collection(db, 'grades');
             const q = query(
                 gradesRef,
@@ -119,7 +175,6 @@ export const useGrading = (user) => {
             const querySnapshot = await getDocs(q);
 
             if (!querySnapshot.empty) {
-                // Update existing grade
                 const docId = querySnapshot.docs[0].id;
                 await updateDoc(doc(db, 'grades', docId), {
                     marksScored,
@@ -130,7 +185,6 @@ export const useGrading = (user) => {
                 });
                 toast.success('Grade updated');
             } else {
-                // Create new grade
                 await addDoc(gradesRef, {
                     assessmentId,
                     courseId,

@@ -68,36 +68,39 @@ export default function TeacherProfile() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-6 animate-scaleIn">
+        <div className="min-h-screen bg-[#F5F6FF] dark:bg-[#070A11] text-[#202442] dark:text-slate-100 p-4 sm:p-6 lg:p-8 animate-scaleIn transition-colors duration-200">
             <div className="max-w-3xl mx-auto">
-                <div className="glass-card overflow-hidden">
-                    <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-6">
-                        <h1 className="text-3xl font-bold">Edit Profile</h1>
-                        <p className="text-emerald-100 mt-1">Update your personal information</p>
+                <div className="rounded-2xl bg-white dark:bg-[#0D1527] border border-[#E2E6F2] dark:border-[#1E2D4A] shadow-md dark:shadow-2xl overflow-hidden transition-colors">
+                    {/* Header with High-Contrast Text */}
+                    <div className="bg-[#F8F9FE] dark:bg-[#0A0F1D] border-b border-[#E2E6F2] dark:border-[#1E2D4A] p-6 sm:p-8">
+                        <h1 className="text-2xl sm:text-3xl font-extrabold text-[#202442] dark:text-white font-display tracking-tight">Edit Profile</h1>
+                        <p className="text-sm font-medium text-[#59627E] dark:text-slate-400 mt-1">Update your personal information and faculty credentials</p>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="p-8">
-                        <div className="flex flex-col items-center mb-8">
+                    <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6">
+                        {/* Profile Picture */}
+                        <div className="flex flex-col items-center mb-6">
                             <div className="relative">
-                                <div className="h-32 w-32 rounded-full overflow-hidden bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center border-4 border-white shadow-lg">
+                                <div className="h-32 w-32 rounded-full overflow-hidden bg-[#EEF1FC] dark:bg-[#0A0F1D] flex items-center justify-center border-4 border-[#E2E6F2] dark:border-[#1E2D4A] shadow-md">
                                     {previewImage ? (
                                         <img src={previewImage} alt="Profile" className="h-full w-full object-cover" />
                                     ) : (
-                                        <User className="h-16 w-16 text-emerald-400" />
+                                        <User className="h-16 w-16 text-[#6558E8] dark:text-[#22D3EE]" />
                                     )}
                                 </div>
-                                <label className="absolute bottom-0 right-0 bg-emerald-600 text-white p-2 rounded-full cursor-pointer hover:bg-emerald-700 shadow-lg transition-colors">
-                                    <Camera className="h-5 w-5" />
+                                <label className="absolute bottom-0 right-0 bg-[#6558E8] dark:bg-[#06B6D4] text-white dark:text-[#070A11] p-2.5 rounded-full cursor-pointer hover:bg-[#5244d4] dark:hover:bg-[#22D3EE] shadow-md transition-all">
+                                    <Camera className="h-4 w-4" />
                                     <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
                                 </label>
                             </div>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Click camera icon to upload picture</p>
+                            <p className="text-xs font-medium text-[#59627E] dark:text-slate-400 mt-2.5">Click camera icon to upload picture</p>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Username */}
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                    <User className="inline h-4 w-4 mr-1" />
+                                <label className="block text-xs font-bold uppercase tracking-wider text-[#202442] dark:text-slate-200 mb-2">
+                                    <User className="inline h-3.5 w-3.5 mr-1 text-[#6558E8] dark:text-[#06B6D4]" />
                                     Username
                                 </label>
                                 <input
@@ -105,15 +108,16 @@ export default function TeacherProfile() {
                                     name="username"
                                     value={formData.username}
                                     onChange={handleChange}
-                                    className={`input-field ${errors.username ? 'border-red-500' : ''}`}
+                                    className={`w-full px-3.5 py-2.5 rounded-xl border ${errors.username ? 'border-red-500' : 'border-[#E2E6F2] dark:border-[#1E2D4A]'} bg-[#F8F9FE] dark:bg-[#070A11] text-[#202442] dark:text-white placeholder-[#7E87A2] dark:placeholder-slate-500 focus:outline-none focus:border-[#6558E8] dark:focus:border-[#06B6D4] text-sm transition-colors`}
                                     placeholder="prof.smith"
                                 />
                                 {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username}</p>}
                             </div>
 
+                            {/* Full Name */}
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                    <User className="inline h-4 w-4 mr-1" />
+                                <label className="block text-xs font-bold uppercase tracking-wider text-[#202442] dark:text-slate-200 mb-2">
+                                    <User className="inline h-3.5 w-3.5 mr-1 text-[#6558E8] dark:text-[#06B6D4]" />
                                     Full Name
                                 </label>
                                 <input
@@ -121,31 +125,33 @@ export default function TeacherProfile() {
                                     name="name"
                                     value={formData.name}
                                     onChange={handleChange}
-                                    className={`input-field ${errors.name ? 'border-red-500' : ''}`}
+                                    className={`w-full px-3.5 py-2.5 rounded-xl border ${errors.name ? 'border-red-500' : 'border-[#E2E6F2] dark:border-[#1E2D4A]'} bg-[#F8F9FE] dark:bg-[#070A11] text-[#202442] dark:text-white placeholder-[#7E87A2] dark:placeholder-slate-500 focus:outline-none focus:border-[#6558E8] dark:focus:border-[#06B6D4] text-sm transition-colors`}
                                     placeholder="Prof. John Smith"
                                 />
                                 {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
                             </div>
 
+                            {/* Email */}
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                    <Mail className="inline h-4 w-4 mr-1" />
-                                    Email
+                                <label className="block text-xs font-bold uppercase tracking-wider text-[#202442] dark:text-slate-200 mb-2">
+                                    <Mail className="inline h-3.5 w-3.5 mr-1 text-[#6558E8] dark:text-[#06B6D4]" />
+                                    Email Address
                                 </label>
                                 <input
                                     type="email"
                                     name="email"
                                     value={formData.email}
                                     onChange={handleChange}
-                                    className={`input-field ${errors.email ? 'border-red-500' : ''}`}
+                                    className={`w-full px-3.5 py-2.5 rounded-xl border ${errors.email ? 'border-red-500' : 'border-[#E2E6F2] dark:border-[#1E2D4A]'} bg-[#F8F9FE] dark:bg-[#070A11] text-[#202442] dark:text-white placeholder-[#7E87A2] dark:placeholder-slate-500 focus:outline-none focus:border-[#6558E8] dark:focus:border-[#06B6D4] text-sm transition-colors`}
                                     placeholder="john.smith@school.edu"
                                 />
                                 {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                             </div>
 
+                            {/* Mobile */}
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                    <Phone className="inline h-4 w-4 mr-1" />
+                                <label className="block text-xs font-bold uppercase tracking-wider text-[#202442] dark:text-slate-200 mb-2">
+                                    <Phone className="inline h-3.5 w-3.5 mr-1 text-[#6558E8] dark:text-[#06B6D4]" />
                                     Mobile Number
                                 </label>
                                 <input
@@ -153,43 +159,45 @@ export default function TeacherProfile() {
                                     name="mobile"
                                     value={formData.mobile}
                                     onChange={handleChange}
-                                    className={`input-field ${errors.mobile ? 'border-red-500' : ''}`}
+                                    className={`w-full px-3.5 py-2.5 rounded-xl border ${errors.mobile ? 'border-red-500' : 'border-[#E2E6F2] dark:border-[#1E2D4A]'} bg-[#F8F9FE] dark:bg-[#070A11] text-[#202442] dark:text-white placeholder-[#7E87A2] dark:placeholder-slate-500 focus:outline-none focus:border-[#6558E8] dark:focus:border-[#06B6D4] text-sm transition-colors`}
                                     placeholder="1234567890"
                                 />
                                 {errors.mobile && <p className="text-red-500 text-xs mt-1">{errors.mobile}</p>}
                             </div>
 
+                            {/* Subject */}
                             <div className="md:col-span-2">
-                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                                    <BookOpen className="inline h-4 w-4 mr-1" />
-                                    Subject
+                                <label className="block text-xs font-bold uppercase tracking-wider text-[#202442] dark:text-slate-200 mb-2">
+                                    <BookOpen className="inline h-3.5 w-3.5 mr-1 text-[#6558E8] dark:text-[#06B6D4]" />
+                                    Subject / Department Specialization
                                 </label>
                                 <input
                                     type="text"
                                     name="subject"
                                     value={formData.subject}
                                     onChange={handleChange}
-                                    className="input-field"
-                                    placeholder="Mathematics"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#E2E6F2] dark:border-[#1E2D4A] bg-[#F8F9FE] dark:bg-[#070A11] text-[#202442] dark:text-white placeholder-[#7E87A2] dark:placeholder-slate-500 focus:outline-none focus:border-[#6558E8] dark:focus:border-[#06B6D4] text-sm transition-colors"
+                                    placeholder="Computer Science & Engineering"
                                 />
                             </div>
                         </div>
 
-                        <div className="flex gap-4 mt-8">
+                        {/* Action Buttons */}
+                        <div className="flex gap-4 pt-4 border-t border-[#E2E6F2] dark:border-[#1E2D4A]">
                             <button
                                 type="submit"
-                                className="btn-primary flex-1 flex items-center justify-center gap-2"
+                                className="px-6 py-3 rounded-xl bg-[#6558E8] dark:bg-[#06B6D4] hover:bg-[#5244d4] dark:hover:bg-[#22D3EE] text-white dark:text-[#070A11] text-xs font-bold uppercase tracking-wider shadow-sm transition-all flex items-center justify-center gap-2 flex-1"
                             >
-                                <Save className="h-5 w-5" />
-                                Save Changes
+                                <Save className="h-4 w-4" />
+                                <span>Save Changes</span>
                             </button>
                             <button
                                 type="button"
                                 onClick={handleCancel}
-                                className="btn-secondary flex-1 flex items-center justify-center gap-2"
+                                className="px-6 py-3 rounded-xl bg-white dark:bg-[#0A0F1D] hover:bg-[#EEF1FC] dark:hover:bg-[#111A2E] text-[#59627E] dark:text-slate-300 border border-[#E2E6F2] dark:border-[#1E2D4A] text-xs font-bold uppercase tracking-wider shadow-sm transition-all flex items-center justify-center gap-2 flex-1"
                             >
-                                <X className="h-5 w-5" />
-                                Cancel
+                                <X className="h-4 w-4" />
+                                <span>Cancel</span>
                             </button>
                         </div>
                     </form>

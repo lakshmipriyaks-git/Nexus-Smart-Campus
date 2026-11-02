@@ -4,7 +4,7 @@ import { db } from '../config/firebase';
 
 export function useInterventions(user) {
     const [interventions, setInterventions] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (!user?.id) {
@@ -13,27 +13,39 @@ export function useInterventions(user) {
             return;
         }
 
-        // For students, get interventions where they are the student
-        // For teachers, get interventions they created
+        if (user.isDemo) {
+            setInterventions([]);
+            setLoading(false);
+            return;
+        }
+
         const interventionsRef = collection(db, 'interventions');
         const interventionsQuery = user.role === 'student'
             ? query(interventionsRef, where('studentId', '==', user.id))
             : query(interventionsRef, where('teacherId', '==', user.id));
 
-        const unsubscribe = onSnapshot(interventionsQuery, (snapshot) => {
-            const interventionsData = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setInterventions(interventionsData);
+        let unsubscribe;
+        try {
+            unsubscribe = onSnapshot(interventionsQuery, (snapshot) => {
+                const interventionsData = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                setInterventions(interventionsData);
+                setLoading(false);
+            }, () => {
+                setInterventions([]);
+                setLoading(false);
+            });
+        } catch (e) {
+            setInterventions([]);
             setLoading(false);
-        }, (error) => {
-            console.error('Error loading interventions:', error);
-            setLoading(false);
-        });
+        }
 
-        return unsubscribe;
-    }, [user]);
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
+    }, [user?.id, user?.role, user?.isDemo]);
 
     return {
         interventions,

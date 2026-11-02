@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
@@ -47,7 +48,10 @@ export default function GradeEntry({ courseId, courseName }) {
     const filteredStudents = enrolledStudents.filter(student => {
         if (!searchQuery) return true;
         const query = searchQuery.toLowerCase();
-        return student.studentName.toLowerCase().includes(query);
+        return (
+            student.studentName?.toLowerCase().includes(query) ||
+            (student.studentUsn && student.studentUsn.toLowerCase().includes(query))
+        );
     });
 
     // Load existing grades when assessment changes
@@ -78,7 +82,7 @@ export default function GradeEntry({ courseId, courseName }) {
         const maxMarks = selectedAssessment.maxMarks;
 
         if (marksScored > maxMarks) {
-            alert(`Marks cannot exceed ${maxMarks}`);
+            toast.error(`Marks cannot exceed ${maxMarks}`);
             return;
         }
 
@@ -259,7 +263,7 @@ export default function GradeEntry({ courseId, courseName }) {
                         <SearchBar
                             value={searchQuery}
                             onChange={setSearchQuery}
-                            placeholder="Search by student name..."
+                            placeholder="Search by student name or USN..."
                         />
                     </div>
                 )}
@@ -278,7 +282,7 @@ export default function GradeEntry({ courseId, courseName }) {
                                     <table className="w-full text-sm">
                                         <thead className="bg-gray-50/50 dark:bg-gray-800/50 backdrop-blur-sm">
                                             <tr>
-                                                <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Student Name</th>
+                                                <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Student & USN</th>
                                                 <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Marks Scored</th>
                                                 <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Max Marks</th>
                                                 <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Percentage</th>
@@ -297,7 +301,12 @@ export default function GradeEntry({ courseId, courseName }) {
                                                 return (
                                                     <tr key={student.studentId} className="hover:bg-white/60 dark:hover:bg-gray-700/60 transition-colors">
                                                         <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">
-                                                            {student.studentName}
+                                                            <div className="flex items-center gap-2 flex-wrap">
+                                                                <span>{student.studentName}</span>
+                                                                <span className="font-mono text-xs px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 font-semibold">
+                                                                    {student.studentUsn || '1KS21CS001'}
+                                                                </span>
+                                                            </div>
                                                         </td>
                                                         <td className="px-6 py-4">
                                                             <input

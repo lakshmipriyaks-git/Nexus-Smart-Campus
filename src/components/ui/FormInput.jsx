@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AlertCircle, CheckCircle } from 'lucide-react';
+import { twMerge } from 'tailwind-merge';
 
 export default function FormInput({
     id,
@@ -15,6 +16,7 @@ export default function FormInput({
     disabled = false,
     placeholder,
     className = '',
+    inputTextClassName = 'text-[#202442] dark:text-[#F8FAFC]',
     ...props
 }) {
     const [isFocused, setIsFocused] = useState(false);
@@ -26,31 +28,18 @@ export default function FormInput({
         if (onBlur) onBlur(e);
     };
 
-    const showError = error && isTouched;
-    const showSuccess = success && isTouched && !error;
-
-    const inputClasses = `
-        w-full px-4 py-2.5 rounded-xl
-        bg-white/50 dark:bg-gray-800/50
-        border-2 transition-all
-        text-gray-900 dark:text-gray-100
-        placeholder:text-gray-400
-        disabled:opacity-50 disabled:cursor-not-allowed
-        focus:outline-none focus:ring-2
-        ${showError
-            ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20'
-            : showSuccess
-                ? 'border-green-500 focus:border-green-500 focus:ring-green-500/20'
-                : 'border-gray-200 dark:border-gray-600 focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-indigo-500/20'
-        }
-    `;
+    const showError = Boolean(error && isTouched);
+    const showSuccess = Boolean(success && isTouched && !error);
 
     return (
-        <div className={`space-y-1.5 ${className}`}>
+        <div className={twMerge('space-y-1.5', className)}>
             {label && (
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label
+                    htmlFor={id}
+                    className="block text-xs font-semibold uppercase tracking-wider text-[#59627E] dark:text-[#94A3B8] font-mono"
+                >
                     {label}
-                    {required && <span className="text-red-500 ml-1">*</span>}
+                    {required && <span className="text-rose-400 ml-1">*</span>}
                 </label>
             )}
 
@@ -59,54 +48,46 @@ export default function FormInput({
                     id={id}
                     type={type}
                     value={value}
-                    onChange={onChange} // Kept original onChange prop
-                    onFocus={() => setIsFocused(true)} // Kept original onFocus
+                    onChange={onChange}
+                    onFocus={() => setIsFocused(true)}
                     onBlur={handleBlur}
                     placeholder={placeholder}
                     disabled={disabled}
                     required={required}
-                    className={`
-                        w-full px-4 py-3 
-                        bg-white/10 dark:bg-gray-800/30
-                        border-2 rounded-xl
-                        text-gray-900 dark:text-gray-100
-                        placeholder-gray-500 dark:placeholder-gray-400
-                        backdrop-blur-sm
-                        transition-all duration-200
-                        focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent
-                        disabled:opacity-50 disabled:cursor-not-allowed
-                        ${showError // Using showError from component state
-                            ? 'border-red-500 focus:ring-red-500'
-                            : showSuccess // Using showSuccess from component state
-                                ? 'border-green-500 focus:ring-green-500'
-                                : 'border-gray-300 dark:border-gray-600'
-                        }
-                    `}
+                    className={twMerge(
+                        'w-full px-3.5 py-2.5 text-sm rounded-lg border bg-[#0A0F1D] shadow-sm transition-all duration-150 outline-none',
+                        'placeholder:text-[#64748B] dark:placeholder:text-[#94A3B8]',
+                        'disabled:opacity-40 disabled:cursor-not-allowed',
+                        inputTextClassName,
+                        showError
+                            ? 'border-rose-500 focus:border-rose-400 focus:ring-1 focus:ring-rose-400'
+                            : showSuccess
+                            ? 'border-emerald-500 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400'
+                            : 'border-[#1E2D4A] focus:border-[#06B6D4] focus:ring-1 focus:ring-[#06B6D4] focus:bg-[#0D1527]'
+                    )}
                     {...props}
                 />
 
                 {showError && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        <AlertCircle className="w-5 h-5 text-red-500" />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-rose-600 dark:text-rose-400 pointer-events-none">
+                        <AlertCircle className="w-4 h-4" />
                     </div>
                 )}
-
                 {showSuccess && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        <CheckCircle className="w-5 h-5 text-green-500" />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-400 pointer-events-none">
+                        <CheckCircle className="w-4 h-4" />
                     </div>
                 )}
             </div>
 
-            {showError && (
-                <p className="text-sm text-red-600 dark:text-red-400 flex items-start gap-1">
-                    <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                    <span>{error}</span>
+            {showError && error && (
+                <p className="text-xs text-rose-600 dark:text-rose-400 mt-1 flex items-center gap-1 font-mono">
+                    {error}
                 </p>
             )}
 
             {helperText && !showError && (
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-xs text-[#64748B] dark:text-[#94A3B8] mt-1 font-mono">
                     {helperText}
                 </p>
             )}

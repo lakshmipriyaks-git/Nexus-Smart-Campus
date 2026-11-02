@@ -11,63 +11,60 @@ export function Tabs({ tabs, defaultTab, children }) {
         const newIndex = tabs.findIndex(t => t.id === tabId);
         const oldIndex = previousTabIndex.current;
 
-        // Determine direction: 1 for forward (right), -1 for backward (left)
         setDirection(newIndex > oldIndex ? 1 : -1);
         previousTabIndex.current = newIndex;
         setActiveTab(tabId);
     };
 
-    // Variants for direction-aware animations
     const variants = {
         enter: (direction) => ({
-            x: direction > 0 ? 20 : -20,
+            x: direction > 0 ? 15 : -15,
             opacity: 0,
-            scale: 0.98
         }),
         center: {
             x: 0,
             opacity: 1,
-            scale: 1
         },
         exit: (direction) => ({
-            x: direction > 0 ? -20 : 20,
+            x: direction > 0 ? -15 : 15,
             opacity: 0,
-            scale: 0.98
         })
     };
 
     return (
         <div className="w-full space-y-6">
-            <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-xl overflow-x-auto no-scrollbar">
-                {tabs.map((tab) => (
-                    <button
-                        key={tab.id}
-                        onClick={() => handleTabChange(tab.id)}
-                        className={clsx(
-                            'relative px-4 py-2 text-sm font-medium rounded-lg transition-colors whitespace-nowrap',
-                            activeTab === tab.id
-                                ? 'text-gray-900 dark:text-white'
-                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-                        )}
-                    >
-                        {activeTab === tab.id && (
-                            <motion.div
-                                layoutId="active-tab"
-                                className="absolute inset-0 bg-white dark:bg-gray-700 rounded-lg shadow-sm"
-                                transition={{
-                                    type: 'spring',
-                                    stiffness: 380,
-                                    damping: 30,
-                                    mass: 0.8
-                                }}
-                            />
-                        )}
-                        <span className="relative z-10 flex items-center gap-2">
-                            {tab.icon && <tab.icon className="w-4 h-4" />}
-                            {tab.label}
-                        </span>
-                    </button>
-                ))}
+            <div className="flex space-x-1.5 bg-[#EEF1FC] dark:bg-[#0A0F1D] p-1.5 rounded-xl border border-[#E2E6F2] dark:border-[#1E2D4A] overflow-x-auto no-scrollbar">
+                {tabs.map((tab) => {
+                    const isActive = activeTab === tab.id;
+                    return (
+                        <button
+                            key={tab.id}
+                            onClick={() => handleTabChange(tab.id)}
+                            className={clsx(
+                                'relative px-4 py-2 text-xs font-bold rounded-lg transition-colors whitespace-nowrap font-display',
+                                isActive
+                                    ? 'text-white dark:text-[#070A11]'
+                                    : 'text-[#59627E] hover:text-[#202442] hover:bg-[#6558E8]/10 dark:text-[#94A3B8] dark:hover:text-[#F8FAFC] dark:hover:bg-[#111A2E]'
+                            )}
+                        >
+                            {isActive && (
+                                <motion.div
+                                    layoutId="active-tab"
+                                    className="absolute inset-0 bg-[#6558E8] dark:bg-[#06B6D4] rounded-lg shadow-sm shadow-[#6558E8]/30 dark:shadow-[0_0_12px_rgba(6,182,212,0.3)]"
+                                    transition={{
+                                        type: 'spring',
+                                        stiffness: 400,
+                                        damping: 32,
+                                    }}
+                                />
+                            )}
+                            <span className="relative z-10 flex items-center gap-2">
+                                {tab.icon && <tab.icon className="w-3.5 h-3.5 flex-shrink-0" />}
+                                {tab.label}
+                            </span>
+                        </button>
+                    );
+                })}
             </div>
 
             <div className="relative">
@@ -80,15 +77,19 @@ export function Tabs({ tabs, defaultTab, children }) {
                         animate="center"
                         exit="exit"
                         transition={{
-                            x: { type: "spring", stiffness: 300, damping: 30 },
-                            opacity: { duration: 0.3 },
-                            scale: { duration: 0.3 }
+                            x: { type: 'spring', stiffness: 320, damping: 30 },
+                            opacity: { duration: 0.15 }
                         }}
                     >
-                        {children(activeTab)}
+                        {typeof children === 'function' ? children(activeTab) : children}
                     </motion.div>
                 </AnimatePresence>
             </div>
         </div>
     );
+}
+
+export function TabPanel({ id, activeTab, children }) {
+    if (id !== activeTab) return null;
+    return <div>{children}</div>;
 }

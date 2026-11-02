@@ -26,6 +26,14 @@ class ErrorBoundary extends React.Component {
         this.setState({ hasError: false, error: null, errorInfo: null });
     };
 
+    handleResetAndHome = () => {
+        try {
+            localStorage.removeItem('nexus_domain_auth_sessions');
+            localStorage.removeItem('nexus_demo_auth_user');
+        } catch (e) {}
+        window.location.href = '/';
+    };
+
     render() {
         if (this.state.hasError) {
             const isDev = import.meta.env.DEV;
@@ -46,10 +54,10 @@ class ErrorBoundary extends React.Component {
                                 </h2>
                                 <p className="text-gray-600 dark:text-gray-300 mb-6">
                                     We encountered an unexpected error. Don't worry, your data is safe.
-                                    Please try refreshing the page or contact support if the problem persists.
+                                    Please try refreshing the page or click below to return to the campus home.
                                 </p>
 
-                                <div className="flex gap-3">
+                                <div className="flex flex-wrap gap-3">
                                     <button
                                         onClick={this.handleRetry}
                                         className="btn-primary flex items-center gap-2"
@@ -62,6 +70,12 @@ class ErrorBoundary extends React.Component {
                                         className="btn-secondary"
                                     >
                                         Reload Page
+                                    </button>
+                                    <button
+                                        onClick={this.handleResetAndHome}
+                                        className="px-4 py-2 rounded-xl text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-colors"
+                                    >
+                                        Go to Campus Home
                                     </button>
                                 </div>
 

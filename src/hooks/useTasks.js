@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../config/firebase';
+import { mockStore } from '../mock/mockStore';
 import toast from 'react-hot-toast';
 
 export const useTasks = (user) => {
@@ -12,20 +13,46 @@ export const useTasks = (user) => {
             return;
         }
 
-        const tasksRef = collection(db, 'users', user.id, 'tasks');
-        const unsubscribe = onSnapshot(tasksRef, (snapshot) => {
-            const tasksData = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setTasks(tasksData);
-        });
+        if (user.isDemo) {
+            const unsub = mockStore.subscribe('tasks', (data) => {
+                setTasks(data || []);
+            });
+            return unsub;
+        }
 
-        return unsubscribe;
-    }, [user]);
+        const tasksRef = collection(db, 'users', user.id, 'tasks');
+        let unsubscribe;
+        try {
+            unsubscribe = onSnapshot(tasksRef, (snapshot) => {
+                const tasksData = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                setTasks(tasksData);
+            }, (err) => {
+                setTasks(mockStore.get('tasks'));
+            });
+        } catch (e) {
+            setTasks(mockStore.get('tasks'));
+        }
+
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
+    }, [user?.id, user?.isDemo]);
 
     const addTask = async (task) => {
         if (!user?.id) return;
+        if (user.isDemo) {
+            mockStore.add('tasks', {
+                ...task,
+                status: 'todo',
+                createdAt: new Date().toISOString()
+            });
+            toast.success('Task added successfully');
+            return;
+        }
+
         try {
             await addDoc(collection(db, 'users', user.id, 'tasks'), {
                 ...task,
@@ -41,6 +68,11 @@ export const useTasks = (user) => {
 
     const updateTaskStatus = async (taskId, newStatus) => {
         if (!user?.id) return;
+        if (user.isDemo) {
+            mockStore.update('tasks', taskId, { status: newStatus });
+            return;
+        }
+
         try {
             await updateDoc(doc(db, 'users', user.id, 'tasks', taskId), {
                 status: newStatus,
@@ -54,6 +86,12 @@ export const useTasks = (user) => {
 
     const deleteTask = async (taskId) => {
         if (!user?.id) return;
+        if (user.isDemo) {
+            mockStore.remove('tasks', taskId);
+            toast.success('Task deleted');
+            return;
+        }
+
         try {
             await deleteDoc(doc(db, 'users', user.id, 'tasks', taskId));
             toast.success('Task deleted');

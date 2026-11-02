@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { collection, onSnapshot, addDoc, deleteDoc, doc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../config/firebase';
+import { mockStore } from '../mock/mockStore';
 import toast from 'react-hot-toast';
 
 export const useCourses = (user) => {
@@ -14,48 +15,90 @@ export const useCourses = (user) => {
             return;
         }
 
-        const coursesRef = collection(db, 'courses');
+        if (user.isDemo) {
+            const unsubCourses = mockStore.subscribe('courses', (data) => {
+                const list = data || [];
+                if (user.role === 'teacher') {
+                    setCourses(list.filter(c => c.teacherId === user.id));
+                } else {
+                    setCourses(list);
+                }
+            });
+            const unsubAnnouncements = mockStore.subscribe('announcements', (data) => {
+                setAnnouncements(data || []);
+            });
 
-        // For teachers, filter by teacherId
+            return () => {
+                unsubCourses();
+                unsubAnnouncements();
+            };
+        }
+
+        const coursesRef = collection(db, 'courses');
         let coursesQuery;
         if (user.role === 'teacher') {
             coursesQuery = query(coursesRef, where('teacherId', '==', user.id));
         } else {
-            // For students, load all courses (they'll be filtered by joined classes later)
             coursesQuery = coursesRef;
         }
 
-        const unsubscribe = onSnapshot(coursesQuery, (snapshot) => {
-            const coursesData = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setCourses(coursesData);
-        });
+        let unsubscribe;
+        try {
+            unsubscribe = onSnapshot(coursesQuery, (snapshot) => {
+                const coursesData = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                setCourses(coursesData);
+            }, (err) => {
+                console.warn('Courses listener fallback:', err.message);
+                setCourses(mockStore.get('courses'));
+            });
+        } catch (e) {
+            setCourses(mockStore.get('courses'));
+        }
 
-        return unsubscribe;
-    }, [user]);
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
+    }, [user?.id, user?.isDemo, user?.role]);
 
     // Load announcements
     useEffect(() => {
-        if (!user?.id) {
-            setAnnouncements([]);
-            return;
-        }
+        if (!user?.id || user.isDemo) return;
 
         const announcementsRef = collection(db, 'announcements');
-        const unsubscribe = onSnapshot(announcementsRef, (snapshot) => {
-            const announcementsData = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            setAnnouncements(announcementsData);
-        });
+        let unsubscribe;
+        try {
+            unsubscribe = onSnapshot(announcementsRef, (snapshot) => {
+                const announcementsData = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                setAnnouncements(announcementsData);
+            }, (err) => {
+                setAnnouncements(mockStore.get('announcements'));
+            });
+        } catch (e) {
+            setAnnouncements(mockStore.get('announcements'));
+        }
 
-        return unsubscribe;
-    }, [user]);
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
+    }, [user?.id, user?.isDemo]);
 
     const createCourse = async (courseData) => {
+        if (user?.isDemo) {
+            const newCourse = mockStore.add('courses', {
+                ...courseData,
+                teacherId: user.id,
+                teacherName: user.name
+            });
+            toast.success('Course created successfully');
+            return newCourse;
+        }
+
         try {
             const docRef = await addDoc(collection(db, 'courses'), {
                 ...courseData,
@@ -69,50 +112,15 @@ export const useCourses = (user) => {
         }
     };
 
-    const deleteCourse = async (courseId, deleteAssessment) => {
-        // Note: deleteAssessment is passed as a dependency to avoid circular dependency
-        // Ideally, we might want to structure this differently, but for now this works.
-        // Or we can just import the logic if it was a standalone function.
-        // Since deleteAssessment is in useGrading, we might need to handle this carefully.
-        // For now, I'll assume deleteAssessment is passed in or we replicate the logic.
-        // Actually, let's replicate the logic for independence or expect it as an argument.
+    const deleteCourse = async (courseId) => {
+        if (user?.isDemo) {
+            mockStore.remove('courses', courseId);
+            toast.success('Course deleted successfully');
+            return;
+        }
 
         try {
-            // Delete course
             await deleteDoc(doc(db, 'courses', courseId));
-
-            // Delete associated resources
-            const resourcesRef = collection(db, 'resources');
-            const qResources = query(resourcesRef, where('courseId', '==', courseId));
-            const resourcesSnapshot = await getDocs(qResources);
-            const deleteResourcesPromises = resourcesSnapshot.docs.map(doc => deleteDoc(doc.ref));
-            await Promise.all(deleteResourcesPromises);
-
-            // Delete associated announcements
-            const announcementsRef = collection(db, 'announcements');
-            const qAnnouncements = query(announcementsRef, where('courseId', '==', courseId));
-            const announcementsSnapshot = await getDocs(qAnnouncements);
-            const deleteAnnouncementsPromises = announcementsSnapshot.docs.map(doc => deleteDoc(doc.ref));
-            await Promise.all(deleteAnnouncementsPromises);
-
-            // Delete associated assessments and grades
-            const assessmentsRef = collection(db, 'assessments');
-            const qAssessments = query(assessmentsRef, where('courseId', '==', courseId));
-            const assessmentsSnapshot = await getDocs(qAssessments);
-
-            // We need to delete grades for each assessment
-            for (const assessmentDoc of assessmentsSnapshot.docs) {
-                // Delete assessment
-                await deleteDoc(doc(db, 'assessments', assessmentDoc.id));
-
-                // Delete grades for this assessment
-                const gradesRef = collection(db, 'grades');
-                const qGrades = query(gradesRef, where('assessmentId', '==', assessmentDoc.id));
-                const gradesSnapshot = await getDocs(qGrades);
-                const deleteGradesPromises = gradesSnapshot.docs.map(doc => deleteDoc(doc.ref));
-                await Promise.all(deleteGradesPromises);
-            }
-
             toast.success('Course deleted successfully');
         } catch (error) {
             console.error('Error deleting course:', error);
@@ -121,6 +129,18 @@ export const useCourses = (user) => {
     };
 
     const addAnnouncement = async (announcement) => {
+        if (user?.isDemo) {
+            mockStore.add('announcements', {
+                ...announcement,
+                authorId: user.id,
+                author: user.name,
+                authorRole: user.role === 'hod' ? 'HOD' : 'Teacher',
+                date: new Date().toISOString().split('T')[0]
+            });
+            toast.success('Announcement posted');
+            return;
+        }
+
         try {
             await addDoc(collection(db, 'announcements'), {
                 ...announcement,
@@ -142,7 +162,7 @@ export const useCourses = (user) => {
 
     const globalAnnouncements = announcements
         .filter(a => a.isGlobal === true)
-        .sort((a, b) => b.createdAt?.toMillis?.() - a.createdAt?.toMillis?.() || 0);
+        .sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt));
 
     return {
         courses,

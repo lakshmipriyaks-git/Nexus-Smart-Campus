@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Plus, BookOpen, Users, Trash2 } from 'lucide-react';
+import { Plus, BookOpen, Users, Trash2, AlertCircle } from 'lucide-react';
 import { Button } from '../components/ui/Button';
+import toast from 'react-hot-toast';
 
 export default function ClassesPage() {
     const { user } = useAuth();
@@ -16,13 +17,22 @@ export default function ClassesPage() {
     const [newCourse, setNewCourse] = useState({ name: '', code: '' });
     const [teacherEmail, setTeacherEmail] = useState('');
 
+    const isPending = user?.status === 'pending';
+
     const myClasses = classes.filter(c =>
         c.teacherId === user?.id ||
         courses.some(course => course.classId === c.id && course.teacherId === user?.id)
     );
     const handleCreateClass = async (e) => {
         e.preventDefault();
-        await createClass(newClass);
+        if (isPending) {
+            toast.error('Your staff account is pending HOD approval before you can create classes.');
+            return;
+        }
+        await createClass({
+            ...newClass,
+            departmentId: user?.departmentId || 'CSE'
+        });
         setNewClass({ name: '', section: '' });
         setShowCreateClass(false);
     };
@@ -39,7 +49,7 @@ export default function ClassesPage() {
                 assignedTeacherId = teacher.id;
                 assignedTeacherName = teacher.name;
             } else {
-                alert('Teacher not found with this email. Course will be assigned to you.');
+                toast.error('Teacher not found with this email. Course will be assigned to you.');
             }
         }
 
@@ -66,13 +76,38 @@ export default function ClassesPage() {
 
     return (
         <div className="space-y-6">
+            {isPending && (
+                <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-start sm:items-center gap-3.5 text-amber-900 dark:text-amber-200 shadow-sm animate-pulse">
+                    <div className="p-2 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex-shrink-0">
+                        <AlertCircle className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1">
+                        <p className="font-bold text-sm text-amber-800 dark:text-amber-200">
+                            Staff Profile Awaiting HOD Approval
+                        </p>
+                        <p className="text-xs text-amber-700/90 dark:text-amber-300/80 mt-0.5">
+                            Your account is currently registered under the <strong className="underline">{user?.departmentId || 'CSE'}</strong> department. New class creation will be unlocked once approved by your Head of Department.
+                        </p>
+                    </div>
+                </div>
+            )}
+
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">My Classes</h1>
                     <p className="text-gray-600 dark:text-gray-400 mt-1">Manage your classes and courses</p>
                 </div>
-                <Button onClick={() => setShowCreateClass(true)} className="flex items-center gap-2">
+                <Button
+                    onClick={() => {
+                        if (isPending) {
+                            toast.error('Account pending HOD approval before creating classes.');
+                        } else {
+                            setShowCreateClass(true);
+                        }
+                    }}
+                    className={`flex items-center gap-2 ${isPending ? 'opacity-60 cursor-not-allowed' : ''}`}
+                >
                     <Plus className="h-4 w-4" />
                     Create Class
                 </Button>

@@ -2,140 +2,296 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Helper functions
+    // --- Authentication & Role Helper Functions ---
     function isAuthenticated() {
       return request.auth != null; 
     }
     
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
     
-    function isTeacher() {
-      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher';
+    function isStaffOrTeacher() {
+      return isAuthenticated() && (getUserRole() == 'teacher' || getUserRole() == 'staff');
     }
 
     function isStudent() {
-      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'student';
+      return isAuthenticated() && getUserRole() == 'student';
     }
 
     function isHod() {
-      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'hod';
+      return isAuthenticated() && getUserRole() == 'hod';
+    }
+
+    function isDriver() {
+      return isAuthenticated() && getUserRole() == 'driver';
+    }
+
+    function isAdminLibrary() {
+      return isAuthenticated() && getUserRole() == 'admin_library';
+    }
+
+    function isAdminXerox() {
+      return isAuthenticated() && getUserRole() == 'admin_xerox';
+    }
+
+    function isAdminCanteen() {
+      return isAuthenticated() && getUserRole() == 'admin_canteen';
     }
 
     // --- Users Collection ---
-    // Users can read their own profile + other authenticated users can read for rosters/teacher lookup
     match /users/{userId} {
-      // Allow all authenticated users to read user profiles (needed for class rosters, teacher lookup, etc.)
-      allow read: if isAuthenticated() || isHod();
-      
-      // Allow creation only by the user themselves
+      allow read: if isAuthenticated();
       allow create: if isAuthenticated() && request.auth.uid == userId;
-      
-      // Regular users: can update their own profile but not change their role
-      // HOD: can update any user (e.g. to approve/reject teachers by setting status)
-      allow update: if isHod() ||
-        (isOwner(userId) && (
+      allow update: if isHod() || (
+        isOwner(userId) && (
           !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) || 
           request.resource.data.role == resource.data.role
-        ));
-      
-      // HOD can remove users (teachers/students). Regular users cannot delete.
+        )
+      );
       allow delete: if isHod();
+
+      // Subcollections: Personal Tasks & Calendar Events
+      match /tasks/{taskId} {
+        allow read, write: if isOwner(userId) || isHod();
+      }
+
+      match /events/{eventId} {
+        allow read, write: if isOwner(userId) || isHod();
+      }
+
+      // Subcollection: Student-Specific Attendance Records Projection
+      match /attendanceRecords/{sessionId} {
+        allow read: if isOwner(userId) || isStaffOrTeacher() || isHod();
+        allow write: if isStaffOrTeacher() || isHod();
+      }
+
+      // Subcollection: Student-Specific Tracked Anonymous Complaints
+      match /trackedComplaints/{complaintId} {
+        allow read, write: if isOwner(userId);
+      }
     }
 
     // --- Classes Collection ---
     match /classes/{classId} {
-      // Anyone can read classes (for catalog), or restrict to members if needed
-      allow read: if isAuthenticated() || isHod();
-      
-      // Only teachers can create/update/delete classes
-      allow create: if isTeacher();
-      allow update: if isTeacher() && resource.data.teacherId == request.auth.uid;
-      allow delete: if (isTeacher() && resource.data.teacherId == request.auth.uid) || isHod();
+      allow read: if isAuthenticated();
+      allow create: if isStaffOrTeacher() || isHod();
+      allow update: if (isStaffOrTeacher() && resource.data.teacherId == request.auth.uid) || isHod();
+      allow delete: if (isStaffOrTeacher() && resource.data.teacherId == request.auth.uid) || isHod();
     }
 
     // --- Courses Collection ---
     match /courses/{courseId} {
-      allow read: if isAuthenticated() || isHod();
-      allow create: if isTeacher();
-      allow update: if isTeacher() && (resource.data.teacherId == request.auth.uid || isOwner(get(/databases/$(database)/documents/classes/$(resource.data.classId)).data.teacherId));
-      allow delete: if isTeacher();
+      allow read: if isAuthenticated();
+      allow create: if isStaffOrTeacher() || isHod();
+      allow update: if (isStaffOrTeacher() && (resource.data.teacherId == request.auth.uid || isOwner(get(/databases/$(database)/documents/classes/$(resource.data.classId)).data.teacherId))) || isHod();
+      allow delete: if (isStaffOrTeacher() && resource.data.teacherId == request.auth.uid) || isHod();
     }
 
     // --- Join Requests ---
     match /joinRequests/{requestId} {
       allow create: if isStudent() && request.resource.data.studentId == request.auth.uid;
-      // 'get' (single doc): students can only read their own; teachers and HODs can read all
-      allow get: if isOwner(resource.data.studentId) || isTeacher() || isHod();
-      // 'list' (queries): teachers and HODs can list all; students use a query filtered by studentId
-      allow list: if isTeacher() || isHod() || isStudent();
-      allow update: if isTeacher() && isOwner(get(/databases/$(database)/documents/classes/$(resource.data.classId)).data.teacherId);
+      allow get: if isOwner(resource.data.studentId) || isStaffOrTeacher() || isHod();
+      allow list: if isAuthenticated();
+      allow update: if isStaffOrTeacher() || isHod();
+      allow delete: if isHod();
     }
 
-    // --- Attendance ---
+    // --- Authoritative Attendance Records ---
     match /attendance/{recordId} {
-      // Students can read only their own attendance records
-      // Note: This requires a specific data structure where studentId is a field, 
-      // or we query by a subcollection. Assuming 'records' map structure in current app, 
-      // row-level security is hard. Ideally, attendance should be a subcollection or separate docs per student.
-      // For this mini-project structure:
-      allow read: if isAuthenticated() || isHod(); 
-      allow write: if isTeacher();
+      // Authoritative class sessions accessible only to faculty and HOD
+      // Students query their own users/{uid}/attendanceRecords projection
+      allow read, write: if isStaffOrTeacher() || isHod();
     }
 
     // --- Grades ---
     match /grades/{gradeId} {
-      allow read: if isOwner(resource.data.studentId) || isTeacher() || isHod();
-      allow write: if isTeacher();
+      allow read: if isAuthenticated();
+      allow write: if isStaffOrTeacher() || isHod();
     }
 
     // --- Assessments ---
     match /assessments/{assessmentId} {
-      allow read: if isAuthenticated() || isHod();
-      allow write: if isTeacher();
+      allow read: if isAuthenticated();
+      allow write: if isStaffOrTeacher() || isHod();
     }
 
     // --- Resources (including Chunks) ---
     match /resources/{resourceId} {
-      allow read: if isAuthenticated() || isHod();
-      allow write: if isTeacher();
+      allow read: if isAuthenticated();
+      allow write: if isStaffOrTeacher() || isHod();
       
       match /chunks/{chunkId} {
         allow read: if isAuthenticated();
-        allow write: if isTeacher();
+        allow write: if isStaffOrTeacher() || isHod();
       }
     }
 
     // --- Announcements ---
     match /announcements/{announcementId} {
-      allow read: if isAuthenticated() || isHod();
-      allow write: if isTeacher() || isHod();
+      allow read: if isAuthenticated();
+      allow write: if isStaffOrTeacher() || isHod();
     }
 
     // --- Interventions (Meetings & Action Plans) ---
     match /interventions/{interventionId} {
-      allow read: if isAuthenticated() || isHod();
-      allow create: if isTeacher();
-      allow update: if isTeacher() && resource.data.teacherId == request.auth.uid;
-      allow delete: if isTeacher() && resource.data.teacherId == request.auth.uid;
+      allow read: if isAuthenticated();
+      allow write: if isStaffOrTeacher() || isHod();
     }
 
     // --- Preference Forms (Created by HOD) ---
     match /preferenceForms/{formId} {
-      // Any authenticated user can read
       allow read: if isAuthenticated();
-      // Only HOD can create/update/delete
       allow write: if isHod();
     }
 
     // --- Subject Preferences (Teacher Submissions) ---
     match /subjectPreferences/{formId} {
-      allow read: if isHod() || (isTeacher() && resource.data.teacherId == request.auth.uid);
-      allow create: if isTeacher() && request.resource.data.teacherId == request.auth.uid;
-      allow update: if isHod() || 
-        (isTeacher() && resource.data.teacherId == request.auth.uid && resource.data.status != 'locked');
+      allow read: if isHod() || (isStaffOrTeacher() && resource.data.teacherId == request.auth.uid);
+      allow create: if isStaffOrTeacher() && request.resource.data.teacherId == request.auth.uid;
+      allow update: if isHod() || (isStaffOrTeacher() && resource.data.teacherId == request.auth.uid && resource.data.status != 'locked');
       allow delete: if isHod();
+    }
+
+    // ==========================================
+    // --- CAMPUS UTILITY SERVICES COLLECTIONS ---
+    // ==========================================
+
+    // --- Bus Fleet Tracking ---
+    match /buses/{busId} {
+      allow read: if isAuthenticated();
+      allow write: if isDriver() || isHod() || isStaffOrTeacher();
+    }
+
+    // --- Digital Library Books ---
+    match /libraryBooks/{bookId} {
+      allow read: if isAuthenticated();
+      allow create, delete: if isAdminLibrary() || isHod();
+      allow update: if isAdminLibrary() || isHod() || isAuthenticated();
+    }
+
+    // --- Library Borrowings ---
+    match /libraryBorrowings/{borrowingId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAdminLibrary() || isHod() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow delete: if isAdminLibrary() || isHod();
+    }
+
+    // --- Smart Canteen Daily Menu ---
+    match /canteenMenu/{itemId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdminCanteen() || isHod();
+    }
+
+    // --- Smart Canteen Kitchen Orders ---
+    match /canteenOrders/{orderId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAdminCanteen() || isHod() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow delete: if isAdminCanteen() || isHod();
+    }
+
+    // --- Print Hub & Xerox Desk Jobs ---
+    match /printJobs/{jobId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAdminXerox() || isHod() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+      allow delete: if isAdminXerox() || isHod();
+    }
+
+    // --- Campus Events ---
+    match /campusEvents/{eventId} {
+      allow read: if isAuthenticated();
+      allow write: if isStaffOrTeacher() || isHod();
+    }
+
+    // --- Event Registrations & RSVP Passes ---
+    match /eventRegistrations/{regId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isStaffOrTeacher() || isHod() || (isAuthenticated() && resource.data.userId == request.auth.uid);
+    }
+
+    // --- Campus Complaints & Grievance Portal ---
+    match /campusComplaints/{complaintId} {
+      // Direct document get: student can access their own, or an anonymous complaint they tracked
+      allow get: if isAuthenticated() && (
+        isHod() ||
+        isStaffOrTeacher() ||
+        resource.data.studentId == request.auth.uid ||
+        (resource.data.isAnonymous == true && exists(/databases/$(database)/documents/users/$(request.auth.uid)/trackedComplaints/$(complaintId)))
+      );
+      // Query list: student can only list their non-anonymous complaints; reviewers list by dept/authority
+      allow list: if isAuthenticated() && (
+        isHod() ||
+        isStaffOrTeacher() ||
+        resource.data.studentId == request.auth.uid
+      );
+      allow create: if isAuthenticated() && (
+        request.resource.data.studentId == request.auth.uid ||
+        (request.resource.data.isAnonymous == true && request.resource.data.studentId == 'anonymous')
+      );
+      allow update: if isHod() || isStaffOrTeacher() || (isAuthenticated() && resource.data.studentId == request.auth.uid);
+      allow delete: if isHod();
+    }
+
+    // Legacy complaints collection alias
+    match /complaints/{complaintId} {
+      allow get: if isAuthenticated() && (
+        isHod() ||
+        isStaffOrTeacher() ||
+        resource.data.studentId == request.auth.uid ||
+        (resource.data.isAnonymous == true && exists(/databases/$(database)/documents/users/$(request.auth.uid)/trackedComplaints/$(complaintId)))
+      );
+      allow list: if isAuthenticated() && (
+        isHod() ||
+        isStaffOrTeacher() ||
+        resource.data.studentId == request.auth.uid
+      );
+      allow create: if isAuthenticated() && (
+        request.resource.data.studentId == request.auth.uid ||
+        (request.resource.data.isAnonymous == true && request.resource.data.studentId == 'anonymous')
+      );
+      allow update: if isHod() || isStaffOrTeacher() || (isAuthenticated() && resource.data.studentId == request.auth.uid);
+      allow delete: if isHod();
+    }
+
+    // --- Campus Payments Audit Records ---
+    match /campusPayments/{paymentId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update, delete: if isHod();
+    }
+
+    // --- System Notifications & Cross-Desk Broadcasts ---
+    match /notifications/{notifId} {
+      // Authenticated users can only read notifications specifically addressed to them
+      // OR public announcements where targetUserId is null / empty
+      // HODs maintain departmental administrative visibility
+      allow read: if isAuthenticated() && (
+        resource.data.targetUserId == request.auth.uid ||
+        resource.data.targetUserId == null ||
+        resource.data.targetUserId == '' ||
+        isHod()
+      );
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        resource.data.targetUserId == request.auth.uid ||
+        resource.data.targetUserId == null ||
+        isHod()
+      );
+      allow delete: if isHod();
+    }
+
+    // --- Student Marks Upload Staging ---
+    match /student_marks/{markId} {
+      allow read: if isAuthenticated();
+      allow write: if isStaffOrTeacher() || isHod();
     }
   }
 }

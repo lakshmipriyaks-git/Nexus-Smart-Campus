@@ -1,125 +1,601 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+    /* ── Light Mode Design Tokens: VIBRANT MODERN CAMPUS ── */
+    --canvas-main: #F5F6FF;
+    --canvas-subtle: #EEF1FC;
+    --canvas-card: #FFFFFF;
+    --canvas-elevated: #FFFFFF;
+
+    --text-primary: #202442;
+    --text-secondary: #59627E;
+    --text-muted: #7E87A2;
+
+    --border-default: #E2E6F2;
+    --border-strong: #CCD3E5;
+
+    --brand-primary: #6558E8;
+    --brand-primary-hover: #5446D7;
+    --brand-secondary: #00A9C7;
+    --brand-blue: #4389F5;
+    --brand-emerald: #22A875;
+    --brand-coral: #F06485;
+    --brand-amber: #ECA23B;
+
+    --shadow-card: 0 4px 20px -2px rgba(101, 88, 232, 0.07), 0 2px 6px -1px rgba(32, 36, 66, 0.04);
+    --shadow-elevated: 0 12px 32px -4px rgba(101, 88, 232, 0.12), 0 4px 12px rgba(32, 36, 66, 0.05);
+}
+
+html.dark {
+    /* ── Dark Mode Design Tokens: MIDNIGHT COMMAND CENTRE ── */
+    --canvas-main: #070A11;
+    --canvas-subtle: #0A0F1D;
+    --canvas-card: #0D1527;
+    --canvas-elevated: #111A2E;
+
+    --text-primary: #F8FAFC;
+    --text-secondary: #94A3B8;
+    --text-muted: #64748B;
+
+    --border-default: #1E2D4A;
+    --border-strong: #2A3C61;
+
+    --brand-primary: #06B6D4;
+    --brand-primary-hover: #22D3EE;
+    --brand-secondary: #22D3EE;
+    --brand-blue: #38BDF8;
+    --brand-emerald: #10B981;
+    --brand-coral: #F43F5E;
+    --brand-amber: #F59E0B;
+
+    --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+    --shadow-elevated: 0 12px 32px -4px rgba(0, 0, 0, 0.6);
+}
+
 @layer base {
     body {
-        @apply bg-slate-50 dark:bg-gray-900 text-slate-900 dark:text-gray-100 transition-colors duration-300;
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-        background-image:
-            radial-gradient(at 0% 0%, hsla(253, 16%, 7%, 0.1) 0, transparent 50%),
-            radial-gradient(at 50% 0%, hsla(225, 39%, 30%, 0.1) 0, transparent 50%),
-            radial-gradient(at 100% 0%, hsla(339, 49%, 30%, 0.1) 0, transparent 50%);
-        background-attachment: fixed;
         min-height: 100vh;
+        transition: background-color 0.2s ease, color 0.2s ease;
     }
 
-    .dark body {
-        background-image:
-            radial-gradient(at 0% 0%, hsla(253, 16%, 3%, 1) 0, transparent 50%),
-            radial-gradient(at 50% 0%, hsla(225, 39%, 10%, 1) 0, transparent 50%),
-            radial-gradient(at 100% 0%, hsla(339, 49%, 10%, 1) 0, transparent 50%);
+    /* Dark Mode Defaults */
+    html.dark body {
+        background-color: #070A11;
+        color: #F8FAFC;
+    }
+
+    /* Light Mode Defaults */
+    html:not(.dark) body {
+        background-color: #F5F6FF;
+        color: #202442;
+    }
+
+    /* Command Center Scrollbar (Dark Mode) */
+    html.dark ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    html.dark ::-webkit-scrollbar-track {
+        background: #070A11;
+    }
+    html.dark ::-webkit-scrollbar-thumb {
+        background: #1E2D4A;
+        border-radius: 9999px;
+    }
+    html.dark ::-webkit-scrollbar-thumb:hover {
+        background: #06B6D4;
+    }
+
+    /* Modern Campus Scrollbar (Light Mode) */
+    html:not(.dark) ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    html:not(.dark) ::-webkit-scrollbar-track {
+        background: #F5F6FF;
+    }
+    html:not(.dark) ::-webkit-scrollbar-thumb {
+        background: #CCD3E5;
+        border-radius: 9999px;
+    }
+    html:not(.dark) ::-webkit-scrollbar-thumb:hover {
+        background: #6558E8;
+    }
+
+    /* Prevent browser autofill from breaking theme */
+    html.dark input:-webkit-autofill,
+    html.dark input:-webkit-autofill:hover, 
+    html.dark input:-webkit-autofill:focus, 
+    html.dark input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 1000px #0D1527 inset !important;
+        -webkit-text-fill-color: #F8FAFC !important;
+        caret-color: #00F0FF !important;
+        transition: background-color 5000s ease-in-out 0s;
+        border-radius: inherit;
+    }
+
+    html:not(.dark) input:-webkit-autofill,
+    html:not(.dark) input:-webkit-autofill:hover, 
+    html:not(.dark) input:-webkit-autofill:focus, 
+    html:not(.dark) input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 1000px #FFFFFF inset !important;
+        -webkit-text-fill-color: #202442 !important;
+        caret-color: #6558E8 !important;
+        transition: background-color 5000s ease-in-out 0s;
+        border-radius: inherit;
     }
 }
 
 @layer components {
+    /* Surfaces */
+    .surface-base {
+        background-color: var(--canvas-main);
+        color: var(--text-primary);
+    }
+
+    .surface-card {
+        background-color: var(--canvas-card);
+        border: 1px solid var(--border-default);
+        border-radius: 0.75rem;
+        box-shadow: var(--shadow-card);
+        color: var(--text-primary);
+    }
+
+    .surface-elevated {
+        background-color: var(--canvas-elevated);
+        border: 1px solid var(--border-strong);
+        border-radius: 0.875rem;
+        box-shadow: var(--shadow-elevated);
+        color: var(--text-primary);
+    }
+
     .glass-panel {
-        @apply bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/50 shadow-xl;
+        background-color: var(--canvas-card);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--border-default);
     }
 
     .glass-card {
-        @apply bg-white/70 dark:bg-gray-800/60 backdrop-blur-lg border border-white/40 dark:border-gray-700/50 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 rounded-2xl;
+        background-color: var(--canvas-card);
+        border: 1px solid var(--border-default);
+        border-radius: 0.75rem;
+        box-shadow: var(--shadow-card);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .card-interactive {
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        cursor: pointer;
+    }
+
+    html.dark .card-interactive:hover {
+        border-color: rgba(6, 182, 212, 0.7);
+        box-shadow: 0 4px 20px -2px rgba(6, 182, 212, 0.15);
+        transform: translateY(-1px);
+    }
+
+    html:not(.dark) .card-interactive:hover {
+        border-color: rgba(101, 88, 232, 0.5);
+        box-shadow: 0 8px 24px -2px rgba(101, 88, 232, 0.12);
+        transform: translateY(-1px);
     }
 
     .input-field {
-        @apply w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-white/50 dark:bg-gray-700/50 focus:bg-white dark:focus:bg-gray-700 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100;
+        width: 100%;
+        padding: 0.625rem 0.875rem;
+        border-radius: 0.5rem;
+        border: 1px solid var(--border-default);
+        background-color: var(--canvas-card);
+        color: var(--text-primary);
+        font-size: 0.875rem;
+        outline: none;
+        transition: all 0.15s ease;
+    }
+    .input-field:focus {
+        border-color: var(--brand-primary);
+        box-shadow: 0 0 0 3px rgba(101, 88, 232, 0.15);
+    }
+    html.dark .input-field:focus {
+        border-color: #06B6D4;
+        box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.2);
+    }
+    .input-field::placeholder {
+        color: var(--text-muted);
     }
 
     .btn-primary {
-        @apply px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white rounded-xl font-medium shadow-lg hover:shadow-indigo-500/30 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98];
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 1rem;
+        background-color: var(--brand-primary);
+        color: #FFFFFF;
+        font-weight: 700;
+        font-size: 0.875rem;
+        border-radius: 0.5rem;
+        border: 1px solid var(--brand-primary);
+        box-shadow: 0 2px 8px rgba(101, 88, 232, 0.2);
+        transition: all 0.15s ease;
+    }
+    html.dark .btn-primary {
+        color: #070A11;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+    .btn-primary:hover {
+        background-color: var(--brand-primary-hover);
+        border-color: var(--brand-primary-hover);
+        transform: translateY(-1px);
+    }
+    .btn-primary:active {
+        transform: translateY(0);
     }
 
     .btn-secondary {
-        @apply px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-xl font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 1rem;
+        background-color: var(--canvas-subtle);
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 0.875rem;
+        border-radius: 0.5rem;
+        border: 1px solid var(--border-default);
+        transition: all 0.15s ease;
+    }
+    .btn-secondary:hover {
+        border-color: var(--border-strong);
     }
 
-    /* Typography Hierarchy */
-    .text-heading {
-        @apply text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-50 tracking-tight leading-tight;
+    .btn-amber {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 1rem;
+        background-color: var(--brand-amber);
+        color: #FFFFFF;
+        font-weight: 700;
+        font-size: 0.875rem;
+        border-radius: 0.5rem;
+        border: 1px solid var(--brand-amber);
+        box-shadow: 0 2px 8px rgba(236, 162, 59, 0.25);
+        transition: all 0.15s ease;
+    }
+    html.dark .btn-amber {
+        color: #070A11;
+    }
+    .btn-amber:hover {
+        filter: brightness(1.08);
     }
 
-    .text-subheading {
-        @apply text-xl md:text-2xl font-semibold text-gray-800 dark:text-gray-100 tracking-tight;
+    /* Badges */
+    .badge-cyan {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        font-family: 'JetBrains Mono', monospace;
+        background-color: rgba(6, 182, 212, 0.12);
+        color: #22D3EE;
+        border: 1px solid rgba(6, 182, 212, 0.3);
+    }
+    html:not(.dark) .badge-cyan {
+        background-color: rgba(101, 88, 232, 0.1);
+        color: #6558E8;
+        border-color: rgba(101, 88, 232, 0.25);
     }
 
-    .text-section-title {
-        @apply text-lg font-semibold text-gray-800 dark:text-gray-100;
+    .badge-amber {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        font-family: 'JetBrains Mono', monospace;
+        background-color: rgba(245, 158, 11, 0.12);
+        color: #FBBF24;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    html:not(.dark) .badge-amber {
+        background-color: rgba(236, 162, 59, 0.12);
+        color: #C87910;
+        border-color: rgba(236, 162, 59, 0.3);
     }
 
-    .text-body {
-        @apply text-base text-gray-700 dark:text-gray-300 leading-relaxed;
+    .badge-emerald {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        font-family: 'JetBrains Mono', monospace;
+        background-color: rgba(16, 185, 129, 0.12);
+        color: #34D399;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    html:not(.dark) .badge-emerald {
+        background-color: rgba(34, 168, 117, 0.12);
+        color: #178358;
+        border-color: rgba(34, 168, 117, 0.3);
     }
 
-    .text-body-secondary {
-        @apply text-sm text-gray-600 dark:text-gray-400 leading-relaxed;
+    .badge-rose {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        font-family: 'JetBrains Mono', monospace;
+        background-color: rgba(244, 63, 94, 0.12);
+        color: #FB7185;
+        border: 1px solid rgba(244, 63, 94, 0.3);
+    }
+    html:not(.dark) .badge-rose {
+        background-color: rgba(240, 100, 133, 0.12);
+        color: #D6375E;
+        border-color: rgba(240, 100, 133, 0.3);
     }
 
-    .text-caption {
-        @apply text-xs text-gray-500 dark:text-gray-500 leading-normal;
+    /* Backward Compatibility Mappings */
+    .badge-subtle-primary {
+        @apply badge-cyan;
     }
-
-    /* Semantic Text Colors */
+    .badge-subtle-terracotta {
+        @apply badge-amber;
+    }
+    .badge-subtle-success {
+        @apply badge-emerald;
+    }
+    .badge-subtle-warning {
+        @apply badge-amber;
+    }
+    .badge-subtle-error {
+        @apply badge-rose;
+    }
     .text-primary {
-        @apply text-indigo-600 dark:text-indigo-400;
+        color: var(--brand-primary);
     }
-
     .text-success {
-        @apply text-green-600 dark:text-green-400;
+        color: var(--brand-emerald);
     }
-
     .text-warning {
-        @apply text-yellow-600 dark:text-yellow-400;
+        color: var(--brand-amber);
     }
-
     .text-error {
-        @apply text-red-600 dark:text-red-400;
+        color: var(--brand-coral);
+    }
+    .text-info {
+        color: var(--brand-blue);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LIGHT MODE DIRECT TOKEN MAPPINGS (VIBRANT MODERN CAMPUS)
+   Applies exclusively when html does NOT have .dark class
+   ═══════════════════════════════════════════════════════════════ */
+html:not(.dark) {
+    /* 1. Canvas Backgrounds */
+    .bg-\[\#070A11\],
+    .bg-\[\#05070B\] {
+        background-color: #F5F6FF !important;
+    }
+    .bg-\[\#070A11\]\/90,
+    .bg-\[\#070A11\]\/95 {
+        background-color: rgba(245, 246, 255, 0.95) !important;
+    }
+    .bg-\[\#070A11\]\/60,
+    .bg-\[\#070A11\]\/80 {
+        background-color: rgba(238, 241, 252, 0.85) !important;
     }
 
-    .text-info {
-        @apply text-blue-600 dark:text-blue-400;
+    .bg-\[\#0A0F1D\] {
+        background-color: #EEF1FC !important;
+    }
+    .bg-\[\#0A0F1D\]\/40,
+    .bg-\[\#0A0F1D\]\/50,
+    .bg-\[\#0A0F1D\]\/60,
+    .bg-\[\#0A0F1D\]\/70,
+    .bg-\[\#0A0F1D\]\/80,
+    .bg-\[\#0A0F1D\]\/90,
+    .bg-\[\#0A0F1D\]\/95 {
+        background-color: #F8F9FE !important;
+    }
+
+    /* Legacy Slate Mappings in Light Mode */
+    .bg-slate-950\/70,
+    .bg-slate-950\/80,
+    .bg-slate-950\/90,
+    .bg-slate-950,
+    .bg-slate-900\/60,
+    .bg-slate-900\/95,
+    .bg-slate-900 {
+        background-color: #EEF1FC !important;
+    }
+    .border-slate-800,
+    .border-slate-800\/80,
+    .border-slate-700,
+    .border-slate-700\/80 {
+        border-color: #E2E6F2 !important;
+    }
+
+    /* 2. Elevated Cards & Surfaces */
+    .bg-\[\#0D1527\] {
+        background-color: #FFFFFF !important;
+        box-shadow: 0 4px 20px -2px rgba(101, 88, 232, 0.06), 0 2px 6px -1px rgba(32, 36, 66, 0.03);
+    }
+    .bg-\[\#111A2E\] {
+        background-color: #EEF1FC !important;
+    }
+    .bg-\[\#162238\] {
+        background-color: #E2E6F2 !important;
+    }
+
+    /* 3. Borders */
+    .border-\[\#1E2D4A\],
+    .border-\[\#1E2D4A\]\/60,
+    .border-\[\#1E2D4A\]\/50,
+    .border-\[\#1E2D4A\]\/40,
+    .border-\[\#1E2D4A\]\/30 {
+        border-color: #E2E6F2 !important;
+    }
+    .border-\[\#2A3C61\],
+    .border-\[\#223554\] {
+        border-color: #CCD3E5 !important;
+    }
+
+    /* 4. Typography */
+    h1, h2, h3, h4, h5, h6 {
+        color: #202442;
+    }
+
+    .text-white:not(
+        button[class*="bg-"]:not([class*="bg-white"]):not([class*="bg-[#0D1527]"]):not([class*="bg-[#0A0F1D]"]):not([class*="bg-[#070A11]"]),
+        a[class*="bg-"]:not([class*="bg-white"]):not([class*="bg-[#0D1527]"]):not([class*="bg-[#0A0F1D]"]):not([class*="bg-[#070A11]"]),
+        span[class*="bg-"]:not([class*="bg-white"]):not([class*="bg-[#0D1527]"]):not([class*="bg-[#0A0F1D]"]):not([class*="bg-[#070A11]"]),
+        .btn-primary,
+        .btn-primary *,
+        .btn-amber,
+        .btn-amber *
+    ) {
+        color: #202442 !important;
+    }
+
+    .text-slate-100,
+    .text-slate-200,
+    .text-slate-300 {
+        color: #202442 !important;
+    }
+
+    .text-slate-400 {
+        color: #59627E !important;
+    }
+
+    .text-slate-500 {
+        color: #7E87A2 !important;
+    }
+
+    /* 5. Brand Highlights & Interactive Controls */
+    .bg-\[\#06B6D4\] {
+        background-color: #6558E8 !important;
+        color: #FFFFFF !important;
+    }
+    .hover\:bg-\[\#22D3EE\]:hover {
+        background-color: #5446D7 !important;
+    }
+    .bg-\[\#06B6D4\]\/10,
+    .bg-\[\#06B6D4\]\/12,
+    .bg-\[\#06B6D4\]\/15,
+    .bg-\[\#06B6D4\]\/20 {
+        background-color: rgba(101, 88, 232, 0.1) !important;
+    }
+    .text-\[\#06B6D4\],
+    .text-\[\#22D3EE\] {
+        color: #6558E8 !important;
+    }
+    .border-\[\#06B6D4\],
+    .border-\[\#06B6D4\]\/30,
+    .border-\[\#06B6D4\]\/40 {
+        border-color: rgba(101, 88, 232, 0.3) !important;
+    }
+    .border-\[\#22D3EE\] {
+        border-color: #6558E8 !important;
+    }
+
+    /* 6. Amber Highlights */
+    .text-\[\#FBBF24\],
+    .text-\[\#F59E0B\] {
+        color: #C87910 !important;
+    }
+    .bg-\[\#F59E0B\]\/10,
+    .bg-\[\#F59E0B\]\/12,
+    .bg-\[\#F59E0B\]\/15 {
+        background-color: rgba(236, 162, 59, 0.12) !important;
+    }
+    .border-\[\#F59E0B\]\/30,
+    .border-\[\#F59E0B\]\/50 {
+        border-color: rgba(236, 162, 59, 0.35) !important;
+    }
+
+    /* 7. Subtle Violet / Blue Gradients for Major Accents */
+    .accent-gradient {
+        background: linear-gradient(135deg, #6558E8 0%, #4389F5 100%);
+    }
+
+    /* 8. Hero Architectural Image & Overlay */
+    .hero-glow {
+        background-color: rgba(101, 88, 232, 0.08) !important;
+    }
+
+    /* 9. Input & Select Controls */
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+    select,
+    textarea {
+        background-color: #FFFFFF !important;
+        color: #202442 !important;
+        border-color: #E2E6F2 !important;
+    }
+    input:focus,
+    select:focus,
+    textarea:focus {
+        border-color: #6558E8 !important;
+        box-shadow: 0 0 0 3px rgba(101, 88, 232, 0.15) !important;
+    }
+
+    /* 10. Tables & Lists */
+    table thead tr {
+        background-color: #EEF1FC !important;
+        color: #59627E !important;
+    }
+    table tbody tr:hover {
+        background-color: #F8F9FE !important;
     }
 }
 
 @layer utilities {
+    .font-display {
+        font-family: 'Manrope', -apple-system, sans-serif;
+    }
+    .font-mono {
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    .border-glow-cyan {
+        box-shadow: 0 0 15px -3px rgba(6, 182, 212, 0.3);
+    }
+    html:not(.dark) .border-glow-cyan {
+        box-shadow: 0 0 15px -3px rgba(101, 88, 232, 0.25);
+    }
+
     .animate-fadeIn {
-        animation: fadeIn 0.2s ease-out;
+        animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .animate-scaleIn {
-        animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     @keyframes fadeIn {
-        from {
-            opacity: 0;
-        }
-
-        to {
-            opacity: 1;
-        }
+        from { opacity: 0; }
+        to { opacity: 1; }
     }
 
     @keyframes scaleIn {
-        from {
-            opacity: 0;
-            transform: scale(0.9);
-        }
-
-        to {
-            opacity: 1;
-            transform: scale(1);
-        }
+        from { opacity: 0; transform: scale(0.97); }
+        to { opacity: 1; transform: scale(1); }
     }
 }
